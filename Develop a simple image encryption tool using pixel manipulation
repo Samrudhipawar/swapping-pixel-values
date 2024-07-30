@@ -1,0 +1,60 @@
+from PIL import Image
+import numpy as np
+
+def load_image(image_path):
+    return Image.open(image_path)
+
+def save_image(image, output_path):
+    image.save(output_path)
+
+def encrypt_image(image, operation, value=None):
+    pixels = np.array(image)
+    if operation == 'swap':
+        # Swap pixel values by reversing the image
+        encrypted_pixels = pixels[::-1, ::-1]
+    elif operation == 'add' and value is not None:
+        # Apply a basic mathematical operation (add value to each pixel)
+        encrypted_pixels = (pixels + value) % 256
+    else:
+        raise ValueError("Invalid operation or missing value for 'add'")
+    
+    return Image.fromarray(encrypted_pixels.astype('uint8'))
+
+def decrypt_image(image, operation, value=None):
+    # Decryption is the reverse process of encryption
+    return encrypt_image(image, operation, value)
+
+def main():
+    print("Image Encryption Tool")
+    image_path = input("Enter the path to the image: ")
+    output_path = input("Enter the path to save the encrypted image: ")
+
+    image = load_image(image_path)
+
+    print("Choose an encryption operation:")
+    print("1. Swap pixel values")
+    print("2. Add a constant value to each pixel")
+    choice = input("Enter 1 or 2: ")
+
+    if choice == '1':
+        encrypted_image = encrypt_image(image, 'swap')
+    elif choice == '2':
+        value = int(input("Enter the constant value to add: "))
+        encrypted_image = encrypt_image(image, 'add', value)
+    else:
+        print("Invalid choice")
+        return
+
+    save_image(encrypted_image, output_path)
+    print(f"Encrypted image saved to {output_path}")
+
+    # Optionally, demonstrate decryption
+    decrypt_choice = input("Do you want to decrypt the image? (y/n): ")
+    if decrypt_choice.lower() == 'y':
+        decrypted_image = decrypt_image(encrypted_image, 'swap' if choice == '1' else 'add', value if choice == '2' else None)
+        decrypted_output_path = input("Enter the path to save the decrypted image: ")
+        save_image(decrypted_image, decrypted_output_path)
+        print(f"Decrypted image saved to {decrypted_output_path}")
+
+if __name__ == "__main__":
+    main()
